@@ -114,7 +114,7 @@ export default function ProfilePage({
         </Button>
       </div>
 
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto pb-20">
         {/* Profile Header */}
         <div className="p-6 border-b border-gray-200">
           <div className="flex items-center space-x-4">

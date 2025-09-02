@@ -2,8 +2,8 @@ import React, { useState, useMemo } from "react";
 import { ImageWithFallback } from "./components/figma/ImageWithFallback";
 
 // Import all page components
-import HomePage from "./components/HomePageFixed";
-import ProductListPage from "./components/ProductListPageUpdated";
+import HomePage from "./components/HomePageResponsive";
+import ProductListPage from "./components/ProductListPageResponsive";
 import ProductDetailPage from "./components/ProductDetailPage";
 import PlaceholderPage from "./components/PlaceholderPage";
 import BiddingPage from "./components/BiddingPage";
@@ -12,6 +12,7 @@ import ProfilePage from "./components/ProfilePage";
 import UserVerificationPage from "./components/UserVerificationPage";
 import Menu from "./components/Menu";
 import ViewAllProductsButton from "./components/ViewAllProductsButton";
+import BottomNavigation from "./components/BottomNavigation";
 
 // Second-hand marketplace product data with electronics, precious metals, and collectibles
 const PRODUCTS = [
@@ -213,7 +214,11 @@ type ViewMode =
   | "newsstand"
   | "about"
   | "profile"
-  | "verification";
+  | "verification"
+  | "auctions"
+  | "orders";
+
+type BottomNavTab = 'home' | 'chat' | 'auctions' | 'orders' | 'profile';
 
 interface BidInfo {
   productId: number;
@@ -235,6 +240,7 @@ export default function App() {
     useState<CategoryFilter>("all");
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>("home");
+  const [activeBottomTab, setActiveBottomTab] = useState<BottomNavTab>("home");
   const [selectedProduct, setSelectedProduct] = useState<
     (typeof PRODUCTS)[0] | null
   >(null);
@@ -355,12 +361,16 @@ export default function App() {
       setCategoryFilter("all");
       setLocationFilter("");
       setViewMode("home");
+      setActiveBottomTab("home");
       setSelectedProduct(null);
     } else if (screen === "list") {
       setViewMode("list");
       setSelectedProduct(null);
     } else {
       setViewMode(screen as ViewMode);
+      if (screen === "profile") {
+        setActiveBottomTab("profile");
+      }
       setSelectedProduct(null);
     }
   };
@@ -397,11 +407,49 @@ export default function App() {
     setCategoryFilter(category as CategoryFilter);
     setViewMode("list");
     setSelectedProduct(null);
+    
+    // Update bottom nav if viewing collectibles (auctions)
+    if (category === "collectibles") {
+      setActiveBottomTab("auctions");
+    }
   };
 
   const handleBackToHome = () => {
     setViewMode("home");
+    setActiveBottomTab("home");
     setSelectedProduct(null);
+  };
+
+  // Bottom navigation handler
+  const handleBottomNavigation = (tab: BottomNavTab) => {
+    setActiveBottomTab(tab);
+    setSelectedProduct(null);
+    
+    switch (tab) {
+      case 'home':
+        // Reset filters when going to home
+        setSearchTerm("");
+        setSortOption("default");
+        setCategoryFilter("all");
+        setLocationFilter("");
+        setViewMode("home");
+        break;
+      case 'chat':
+        // Show a general chat/messages view
+        setViewMode("newsstand");
+        break;
+      case 'auctions':
+        // Show only collectibles with auction functionality
+        setCategoryFilter("collectibles");
+        setViewMode("auctions");
+        break;
+      case 'orders':
+        setViewMode("orders");
+        break;
+      case 'profile':
+        setViewMode("profile");
+        break;
+    }
   };
 
   // Render current view based on viewMode
@@ -506,6 +554,38 @@ export default function App() {
           />
         );
 
+      case "auctions":
+        return (
+          <ProductListPage
+            products={filteredAndSortedProducts.filter(p => p.category === 'collectibles')}
+            favorites={favorites}
+            searchTerm={searchTerm}
+            sortOption={sortOption}
+            onSearchChange={setSearchTerm}
+            onSortChange={setSortOption}
+            categoryFilter="collectibles"
+            onCategoryChange={setCategoryFilter}
+            onToggleFavorite={toggleFavorite}
+            onProductClick={handleProductClick}
+            onMenuClick={() => setIsNavOpen(true)}
+            onChatClick={handleChatClick}
+            onCollectibleClick={handleCollectibleClick}
+            onBack={handleBackToHome}
+          />
+        );
+
+      case "orders":
+        return (
+          <>
+            <PlaceholderPage
+              title="Your Orders"
+              onBack={handleBackToHome}
+              onMenuClick={() => setIsNavOpen(true)}
+            />
+            <ViewAllProductsButton onClick={handleViewAllProducts} />
+          </>
+        );
+
       case "newsstand":
       case "about":
         return (
@@ -513,7 +593,7 @@ export default function App() {
             <PlaceholderPage
               title={
                 viewMode === "newsstand"
-                  ? "Newsstand"
+                  ? "Messages"
                   : "Who we are"
               }
               onBack={handleBackToHome}
@@ -528,13 +608,24 @@ export default function App() {
     }
   };
 
+  // Determine if bottom navigation should be shown
+  const showBottomNav = !['detail', 'bidding', 'chat', 'verification'].includes(viewMode);
+
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-      {/* iPhone 16 Container */}
-      <div className="w-[393px] h-[852px] bg-[#ffffff] relative overflow-hidden rounded-[40px] shadow-2xl border-8 border-black">
-        <div className="w-full h-full overflow-hidden">
+    <div className="min-h-screen bg-gray-100">
+      {/* Dynamic Responsive Container */}
+      <div className="w-full max-w-sm sm:max-w-md mx-auto min-h-screen bg-white relative overflow-hidden shadow-xl">
+        <div className="w-full h-screen overflow-hidden">
           {renderCurrentView()}
         </div>
+
+        {/* Bottom Navigation */}
+        {showBottomNav && (
+          <BottomNavigation
+            activeTab={activeBottomTab}
+            onTabClick={handleBottomNavigation}
+          />
+        )}
 
         {/* Custom Menu */}
         <Menu

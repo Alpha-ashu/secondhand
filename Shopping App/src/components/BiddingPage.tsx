@@ -164,7 +164,7 @@ export default function BiddingPage({
           {/* Product Image */}
           <div className="relative mb-6">
             <div 
-              className="w-full h-[280px] rounded-[12px] bg-cover bg-center relative"
+              className="w-full aspect-square rounded-[12px] bg-cover bg-center relative"
               style={{ backgroundImage: `url('${product.images[0]}')` }}
             >
               <div className="absolute top-3 left-3">

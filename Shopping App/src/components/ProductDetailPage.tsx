@@ -150,7 +150,7 @@ export default function ProductDetailPage({
 
       <div className="flex-1 overflow-y-auto">
         {/* Media Gallery Section */}
-        <div className="relative h-80">
+        <div className="relative aspect-square">
           {/* Main Media Display */}
           {currentMedia.type === 'image' ? (
             <ImageWithFallback
@@ -227,7 +227,7 @@ export default function ProductDetailPage({
                 <button
                   key={index}
                   onClick={() => setCurrentMediaIndex(index)}
-                  className={`relative flex-shrink-0 w-12 h-12 rounded-lg overflow-hidden border-2 transition-all ${
+                  className={`relative flex-shrink-0 w-12 aspect-square rounded-lg overflow-hidden border-2 transition-all ${
                     index === currentMediaIndex ? "border-white scale-110" : "border-white/50"
                   }`}
                 >
