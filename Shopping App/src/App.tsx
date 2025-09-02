@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { ImageWithFallback } from "./components/figma/ImageWithFallback";
+import SimpleBackendTest from "./components/SimpleBackendTest";
 
 // Import all page components
 import HomePage from "./components/HomePageResponsive";
@@ -581,6 +582,7 @@ export default function App() {
               title="Your Orders"
               onBack={handleBackToHome}
               onMenuClick={() => setIsNavOpen(true)}
+              cartCount={0}
             />
             <ViewAllProductsButton onClick={handleViewAllProducts} />
           </>
@@ -598,6 +600,7 @@ export default function App() {
               }
               onBack={handleBackToHome}
               onMenuClick={() => setIsNavOpen(true)}
+              cartCount={0}
             />
             <ViewAllProductsButton onClick={handleViewAllProducts} />
           </>
