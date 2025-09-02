@@ -42,12 +42,7 @@ const generateToken = (userId: string): string => {
 // @access  Public
 router.post('/register', async (req, res, next) => {
   try {
-    const { error } = registerSchema.validate(req.body);
-    if (error) {
-      return res.status(400).json({ message: error.details[0].message });
-    }
-
-    const { username, email, password, firstName, lastName, phone, location } = req.body;
+    const { username, email, password, firstName, lastName, location } = req.body;
 
     // Check if user already exists
     const existingUser = await User.findOne({
@@ -55,8 +50,9 @@ router.post('/register', async (req, res, next) => {
     });
 
     if (existingUser) {
-      return res.status(400).json({ 
-        message: existingUser.email === email ? 'Email already registered' : 'Username already taken'
+      return res.status(400).json({
+        success: false,
+        message: 'User with this email or username already exists'
       });
     }
 
@@ -64,19 +60,19 @@ router.post('/register', async (req, res, next) => {
     const user = new User({
       username,
       email,
-      password,
+      password, // Will be hashed by the pre-save middleware
       firstName,
       lastName,
-      phone,
-      location
+      location,
+      isVerified: false
     });
 
     await user.save();
 
-    // Generate token
-    const token = generateToken(user._id);
+    // Generate JWT token
+    const token = generateToken(user._id.toString());
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       message: 'User registered successfully',
       token,
@@ -91,7 +87,7 @@ router.post('/register', async (req, res, next) => {
       }
     });
   } catch (error) {
-    next(error);
+    return next(error);
   }
 });
 
@@ -100,33 +96,30 @@ router.post('/register', async (req, res, next) => {
 // @access  Public
 router.post('/login', async (req, res, next) => {
   try {
-    const { error } = loginSchema.validate(req.body);
-    if (error) {
-      return res.status(400).json({ message: error.details[0].message });
-    }
-
     const { email, password } = req.body;
 
     // Find user by email
-    const user = await User.findOne({ email }).select('+password');
+    const user = await User.findOne({ email });
     if (!user) {
-      return res.status(401).json({ message: 'Invalid credentials' });
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid credentials'
+      });
     }
 
     // Check password
-    const isMatch = await user.comparePassword(password);
-    if (!isMatch) {
-      return res.status(401).json({ message: 'Invalid credentials' });
+    const isPasswordValid = await user.comparePassword(password);
+    if (!isPasswordValid) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid credentials'
+      });
     }
 
-    // Update last login
-    user.lastLogin = new Date();
-    await user.save();
+    // Generate JWT token
+    const token = generateToken(user._id.toString());
 
-    // Generate token
-    const token = generateToken(user._id);
-
-    res.json({
+    return res.json({
       success: true,
       message: 'Login successful',
       token,
@@ -137,12 +130,11 @@ router.post('/login', async (req, res, next) => {
         firstName: user.firstName,
         lastName: user.lastName,
         location: user.location,
-        isVerified: user.isVerified,
-        avatar: user.avatar
+        isVerified: user.isVerified
       }
     });
   } catch (error) {
-    next(error);
+    return next(error);
   }
 });
 

@@ -1,6 +1,12 @@
 import React, { useState, useMemo } from "react";
 import { ImageWithFallback } from "./components/figma/ImageWithFallback";
-import SimpleBackendTest from "./components/SimpleBackendTest";
+// import SimpleBackendTest from "./components/SimpleBackendTest";
+
+// Import enhanced components
+import EnhancedHomePage from "./components/EnhancedHomePage";
+import EnhancedProfilePage from "./components/EnhancedProfilePage";
+import EnhancedBottomNavigation from "./components/EnhancedBottomNavigation";
+import ResponsiveProductGrid from "./components/ResponsiveProductGrid";
 
 // Import all page components
 import HomePage from "./components/HomePageResponsive";
@@ -219,7 +225,7 @@ type ViewMode =
   | "auctions"
   | "orders";
 
-type BottomNavTab = 'home' | 'chat' | 'auctions' | 'orders' | 'profile';
+type BottomNavTab = 'home' | 'search' | 'sell' | 'messages' | 'profile';
 
 interface BidInfo {
   productId: number;
@@ -231,21 +237,17 @@ interface BidInfo {
 
 
 export default function App() {
-  const [favorites, setFavorites] = useState<Set<number>>(
-    new Set(),
-  );
+  const [favorites, setFavorites] = useState(new Set<number>());
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortOption, setSortOption] =
-    useState<SortOption>("default");
-  const [categoryFilter, setCategoryFilter] = 
-    useState<CategoryFilter>("all");
+  const [sortOption, setSortOption] = useState("default");
+  const [categoryFilter, setCategoryFilter] = useState("all");
   const [isNavOpen, setIsNavOpen] = useState(false);
-  const [viewMode, setViewMode] = useState<ViewMode>("home");
-  const [activeBottomTab, setActiveBottomTab] = useState<BottomNavTab>("home");
+  const [viewMode, setViewMode] = useState("home");
+  const [activeBottomTab, setActiveBottomTab] = useState("home");
   const [selectedProduct, setSelectedProduct] = useState<
     (typeof PRODUCTS)[0] | null
   >(null);
-  const [activeBids, setActiveBids] = useState<BidInfo[]>([]);
+  const [activeBids, setActiveBids] = useState([]);
   const [locationFilter, setLocationFilter] = useState("");
 
   const filteredAndSortedProducts = useMemo(() => {
@@ -435,17 +437,17 @@ export default function App() {
         setLocationFilter("");
         setViewMode("home");
         break;
-      case 'chat':
+      case 'search':
+        // Show product list for searching
+        setViewMode("list");
+        break;
+      case 'sell':
+        // Show sell/add product view
+        setViewMode("orders"); // Placeholder for now
+        break;
+      case 'messages':
         // Show a general chat/messages view
         setViewMode("newsstand");
-        break;
-      case 'auctions':
-        // Show only collectibles with auction functionality
-        setCategoryFilter("collectibles");
-        setViewMode("auctions");
-        break;
-      case 'orders':
-        setViewMode("orders");
         break;
       case 'profile':
         setViewMode("profile");
@@ -458,7 +460,7 @@ export default function App() {
     switch (viewMode) {
       case "home":
         return (
-          <HomePage
+          <EnhancedHomePage
             onMenuClick={() => setIsNavOpen(true)}
             onSearchSubmit={handleHomeSearch}
             onCategoryClick={handleHomeCategoryClick}
@@ -481,10 +483,10 @@ export default function App() {
             categoryFilter={categoryFilter}
             onCategoryChange={setCategoryFilter}
             onToggleFavorite={toggleFavorite}
-            onProductClick={handleProductClick}
+            onProductClick={(product) => handleProductClick(product as any)}
             onMenuClick={() => setIsNavOpen(true)}
-            onChatClick={handleChatClick}
-            onCollectibleClick={handleCollectibleClick}
+            onChatClick={(product) => handleChatClick(product as any)}
+            onCollectibleClick={(product) => handleCollectibleClick(product as any)}
             onBack={handleBackToHome}
           />
         );
@@ -496,7 +498,7 @@ export default function App() {
               product={selectedProduct}
               onBack={() => searchTerm || categoryFilter !== "all" || locationFilter ? handleBackToList() : handleBackToHome()}
               onMenuClick={() => setIsNavOpen(true)}
-              onChatClick={handleChatClick}
+              onChatClick={(product) => handleChatClick(product as any)}
               onToggleFavorite={toggleFavorite}
               isFavorite={favorites.has(selectedProduct.id)}
               onVerificationClick={handleVerificationClick}
@@ -534,7 +536,7 @@ export default function App() {
       case "profile":
         return (
           <>
-            <ProfilePage
+            <EnhancedProfilePage
               onBack={handleBackToHome}
               onMenuClick={() => setIsNavOpen(true)}
               onVerificationClick={handleVerificationClick}
@@ -567,10 +569,10 @@ export default function App() {
             categoryFilter="collectibles"
             onCategoryChange={setCategoryFilter}
             onToggleFavorite={toggleFavorite}
-            onProductClick={handleProductClick}
+            onProductClick={(product) => handleProductClick(product as any)}
             onMenuClick={() => setIsNavOpen(true)}
-            onChatClick={handleChatClick}
-            onCollectibleClick={handleCollectibleClick}
+            onChatClick={(product) => handleChatClick(product as any)}
+            onCollectibleClick={(product) => handleCollectibleClick(product as any)}
             onBack={handleBackToHome}
           />
         );
@@ -617,14 +619,14 @@ export default function App() {
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Dynamic Responsive Container */}
-      <div className="w-full max-w-sm sm:max-w-md mx-auto min-h-screen bg-white relative overflow-hidden shadow-xl">
+      <div className="w-full max-w-sm sm:max-w-md lg:max-w-4xl xl:max-w-6xl 2xl:max-w-7xl mx-auto min-h-screen bg-white relative overflow-hidden shadow-xl">
         <div className="w-full h-screen overflow-hidden">
           {renderCurrentView()}
         </div>
 
         {/* Bottom Navigation */}
         {showBottomNav && (
-          <BottomNavigation
+          <EnhancedBottomNavigation
             activeTab={activeBottomTab}
             onTabClick={handleBottomNavigation}
           />

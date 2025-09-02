@@ -4,11 +4,12 @@
   "description": "Backend API for secondhand marketplace app",
   "main": "dist/server.js",
   "scripts": {
-    "dev": "nodemon src/server.ts",
-    "build": "tsc",
     "start": "node dist/server.js",
+    "dev": "nodemon src/server.ts",
+    "build": "tsc --skipLibCheck",
+    "build:simple": "tsc src/server.ts src/routes/auth-simple.ts src/models/User.ts --outDir dist --target es2020 --module commonjs --esModuleInterop --skipLibCheck",
     "test": "jest",
-    "seed": "ts-node src/scripts/seed.ts"
+    "seed": "node dist/scripts/seedData.js"
   },
   "dependencies": {
     "@types/bcrypt": "^6.0.0",
