@@ -1,0 +1,18 @@
+{
+  "name": "secondhand-marketplace",
+  "version": "1.0.0",
+  "description": "Secondhand marketplace app with React frontend and Node.js backend",
+  "scripts": {
+    "dev": "concurrently \"npm run backend\" \"npm run frontend\"",
+    "backend": "cd backend && npm run dev",
+    "frontend": "cd \"Shopping App\" && npm run dev",
+    "install-all": "npm install && cd backend && npm install && cd ../\"Shopping App\" && npm install",
+    "build": "cd backend && npm run build && cd ../\"Shopping App\" && npm run build"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "keywords": ["marketplace", "react", "nodejs", "mongodb"],
+  "author": "",
+  "license": "MIT"
+}
